@@ -3,10 +3,7 @@ package commands
 import (
 	"context"
 	"github.com/filecoin-project/sentinel-visor/chain"
-	"github.com/filecoin-project/sentinel-visor/lens"
-	"github.com/filecoin-project/sentinel-visor/storage"
 	"github.com/filecoin-project/sentinel-visor/vector"
-	"github.com/ipfs/go-cid"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/xerrors"
 	"os"
@@ -14,26 +11,6 @@ import (
 	"strings"
 	"syscall"
 )
-
-type VectorContext struct {
-	ctx context.Context
-
-	cli *cli.Context
-
-	from  int64
-	to    int64
-	tasks []string
-
-	strg *storage.MemStorage
-
-	opener lens.APIOpener
-	closer lens.APICloser
-
-	roots []cid.Cid
-
-	// non-nil when validating.
-	schema vector.RunnerSchema
-}
 
 var Vector = &cli.Command{
 	Name:  "vector",
