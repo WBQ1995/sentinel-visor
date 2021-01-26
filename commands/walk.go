@@ -36,7 +36,7 @@ var Walk = &cli.Command{
 		},
 		&cli.StringFlag{
 			Name:    "tasks",
-			Usage:   "Comma separated list of tasks to run. Each task is reported separately in the database.",
+			Usage:   "Comma separated list of tasks to build. Each task is reported separately in the database.",
 			Value:   strings.Join([]string{chain.BlocksTask, chain.MessagesTask, chain.ChainEconomicsTask, chain.ActorStatesRawTask}, ","),
 			EnvVars: []string{"VISOR_WALK_TASKS"},
 		},
