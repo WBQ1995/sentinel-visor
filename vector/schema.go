@@ -39,21 +39,7 @@ func (b *Base64EncodedBytes) UnmarshalJSON(v []byte) error {
 	return nil
 }
 
-type OtherSchema struct {
-	Meta   SchemaMetadata     `json:"metadata"`
-	Params Parameters         `json:"parameters"`
-	CAR    Base64EncodedBytes `json:"car"`
-	Exp    OtherExpected      `json:"expected"`
-}
-
-type Schema struct {
-	Meta   SchemaMetadata     `json:"metadata"`
-	Params Parameters         `json:"parameters"`
-	CAR    Base64EncodedBytes `json:"car"`
-	Exp    Expected           `json:"expected"`
-}
-
-type SchemaMetadata struct {
+type Metadata struct {
 	Commit      string `json:"commit"`
 	Version     string `json:"version"`
 	Description string `json:"description"`
@@ -67,10 +53,10 @@ type Parameters struct {
 	Tasks []string `json:"tasks"`
 }
 
-type Expected struct {
+type BuilderExpected struct {
 	Models map[string][]interface{}
 }
 
-type OtherExpected struct {
+type RunnerExpected struct {
 	Models map[string]json.RawMessage
 }
