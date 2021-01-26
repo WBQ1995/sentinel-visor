@@ -12,6 +12,7 @@ import (
 	"github.com/filecoin-project/sentinel-visor/lens"
 	"github.com/filecoin-project/sentinel-visor/lens/camera"
 	"github.com/filecoin-project/sentinel-visor/storage"
+	"github.com/filecoin-project/sentinel-visor/version"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/xerrors"
@@ -78,6 +79,11 @@ func (b *Builder) Build(ctx context.Context) (*BuilderSchema, error) {
 	}
 	defer closer()
 
+	network, err := node.StateNetworkName(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	roots, err := node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(b.To), types.EmptyTSK)
 	if err != nil {
 		return nil, err
@@ -116,12 +122,11 @@ func (b *Builder) Build(ctx context.Context) (*BuilderSchema, error) {
 		return nil, err
 	}
 
-	return &BuilderSchema{
+	schema := &BuilderSchema{
 		Meta: Metadata{
-			Commit:      "TODO",
-			Version:     "TODO",
+			Version:     version.String(),
 			Description: "TODO",
-			Network:     "TODO",
+			Network:     string(network),
 			Date:        time.Now().UTC().Unix(),
 		},
 		Params: Parameters{
@@ -133,5 +138,13 @@ func (b *Builder) Build(ctx context.Context) (*BuilderSchema, error) {
 		Exp: BuilderExpected{
 			Models: b.storage.Data,
 		},
-	}, nil
+	}
+
+	log.Infow("built Schema",
+		"version", schema.Meta.Version,
+		"network", schema.Meta.Network,
+		"date", schema.Meta.Date,
+	)
+
+	return schema, nil
 }

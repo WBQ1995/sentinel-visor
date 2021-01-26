@@ -40,7 +40,6 @@ func (b *Base64EncodedBytes) UnmarshalJSON(v []byte) error {
 }
 
 type Metadata struct {
-	Commit      string `json:"commit"`
 	Version     string `json:"version"`
 	Description string `json:"description"`
 	Network     string `json:"network"`
