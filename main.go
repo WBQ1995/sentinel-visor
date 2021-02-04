@@ -42,7 +42,7 @@ func main() {
 			&cli.BoolFlag{
 				Name:    "repo-read-only",
 				EnvVars: []string{"VISOR_REPO_READ_ONLY"},
-				Value:   true,
+				Value:   false,
 				Usage:   "Open the repo in read only mode",
 			},
 			&cli.StringFlag{

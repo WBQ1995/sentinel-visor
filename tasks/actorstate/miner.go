@@ -99,9 +99,10 @@ func NewMinerStateExtractionContext(ctx context.Context, a ActorInfo, node Actor
 		return nil, xerrors.Errorf("loading current tipset: %w", err)
 	}
 
+	log.Infow("MinerStateExtraction", "Height", curTipset.Height(), "Head", curActor.Head, "TipSet", a.TipSet.String())
 	curState, err := miner.Load(node.Store(), curActor)
 	if err != nil {
-		return nil, xerrors.Errorf("loading current miner state: %w", err)
+		return nil, xerrors.Errorf("loading current miner %s state: %w", curActor.Head, err)
 	}
 
 	prevTipset := curTipset
