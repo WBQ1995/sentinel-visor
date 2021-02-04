@@ -48,13 +48,23 @@ type TipSetIndexer struct {
 	node            lens.API
 	opener          lens.APIOpener
 	closer          lens.APICloser
+
+	addressFilter *AddressFilter
+}
+
+type TipSetIndexerOpt func(t *TipSetIndexer)
+
+func AddressFilterOpt(f *AddressFilter) TipSetIndexerOpt {
+	return func(t *TipSetIndexer) {
+		t.addressFilter = f
+	}
 }
 
 // A TipSetIndexer extracts block, message and actor state data from a tipset and persists it to storage. Extraction
 // and persistence are concurrent. Extraction of the a tipset can proceed while data from the previous extraction is
 // being persisted. The indexer may be given a time window in which to complete data extraction. The name of the
 // indexer is used as the reporter in the visor_processing_reports table.
-func NewTipSetIndexer(o lens.APIOpener, d model.Storage, window time.Duration, name string, tasks []string) (*TipSetIndexer, error) {
+func NewTipSetIndexer(o lens.APIOpener, d model.Storage, window time.Duration, name string, tasks []string, options ...TipSetIndexerOpt) (*TipSetIndexer, error) {
 	tsi := &TipSetIndexer{
 		storage:         d,
 		window:          window,
@@ -109,6 +119,11 @@ func NewTipSetIndexer(o lens.APIOpener, d model.Storage, window time.Duration, n
 			return nil, xerrors.Errorf("unknown task: %s", task)
 		}
 	}
+
+	for _, opt := range options {
+		opt(tsi)
+	}
+
 	return tsi, nil
 }
 
@@ -174,7 +189,6 @@ func (t *TipSetIndexer) TipSet(ctx context.Context, ts *types.TipSet) error {
 
 			changes, err := t.node.StateChangedActors(tctx, parent.ParentState(), child.ParentState())
 			if err != nil {
-
 				terr := xerrors.Errorf("failed to extract actor changes: %w", err)
 				// We need to report that all actor tasks failed
 				for name := range t.actorProcessors {
@@ -191,6 +205,14 @@ func (t *TipSetIndexer) TipSet(ctx context.Context, ts *types.TipSet) error {
 					taskOutputs[name] = model.PersistableList{report}
 				}
 				return terr
+			}
+
+			if t.addressFilter != nil {
+				for addr := range changes {
+					if !t.addressFilter.Allow(addr) {
+						delete(changes, addr)
+					}
+				}
 			}
 
 			for name, p := range t.actorProcessors {

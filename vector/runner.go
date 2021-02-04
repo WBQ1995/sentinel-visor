@@ -86,7 +86,11 @@ func NewRunner(cctx *cli.Context) (*Runner, error) {
 }
 
 func (r *Runner) Run(ctx context.Context) error {
-	tsIndexer, err := chain.NewTipSetIndexer(r.opener, r.storage, 0, "run_vector", r.schema.Params.Tasks)
+	var opt chain.TipSetIndexerOpt
+	if len(r.schema.Params.AddressFilter) > 0 {
+		opt = chain.AddressFilterOpt(chain.NewAddressFilter(r.schema.Params.AddressFilter))
+	}
+	tsIndexer, err := chain.NewTipSetIndexer(r.opener, r.storage, 0, "run_vector", r.schema.Params.Tasks, opt)
 	if err != nil {
 		return xerrors.Errorf("setup indexer: %w", err)
 	}

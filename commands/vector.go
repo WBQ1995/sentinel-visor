@@ -44,6 +44,10 @@ var BuildVector = &cli.Command{
 			EnvVars: []string{"VISOR_WALK_TASKS"},
 		},
 		&cli.StringFlag{
+			Name:  "address-filter",
+			Usage: "Address of an actor.",
+		},
+		&cli.StringFlag{
 			Name:  "vector-file",
 			Usage: "Path of vector file.",
 		},

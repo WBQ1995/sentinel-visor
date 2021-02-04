@@ -39,9 +39,10 @@ func (bs *BuilderSchema) Persist(path string) error {
 }
 
 type Builder struct {
-	From  int64
-	To    int64
-	Tasks []string
+	From          int64
+	To            int64
+	Tasks         []string
+	AddressFilter string
 
 	storage *storage.MemStorage
 
@@ -62,12 +63,13 @@ func NewBuilder(cctx *cli.Context) (*Builder, error) {
 	}
 
 	return &Builder{
-		From:    from,
-		To:      to,
-		Tasks:   strings.Split(cctx.String("tasks"), ","),
-		storage: storage.NewMemStorage(),
-		opener:  lensOpener,
-		closer:  lensCloser,
+		From:          from,
+		To:            to,
+		Tasks:         strings.Split(cctx.String("tasks"), ","),
+		AddressFilter: cctx.String("address-filter"),
+		storage:       storage.NewMemStorage(),
+		opener:        lensOpener,
+		closer:        lensCloser,
 	}, nil
 }
 
@@ -89,8 +91,13 @@ func (b *Builder) Build(ctx context.Context) (*BuilderSchema, error) {
 		return nil, err
 	}
 
+	var opts []chain.TipSetIndexerOpt
+	if len(b.AddressFilter) > 0 {
+		opts = append(opts, chain.AddressFilterOpt(chain.NewAddressFilter(b.AddressFilter)))
+	}
+
 	// perform a walk over the chain.
-	tsIndexer, err := chain.NewTipSetIndexer(b.opener, b.storage, 0, "build_vector", b.Tasks)
+	tsIndexer, err := chain.NewTipSetIndexer(b.opener, b.storage, 0, "build_vector", b.Tasks, opts...)
 	if err != nil {
 		return nil, xerrors.Errorf("setup indexer: %w", err)
 	}
@@ -130,9 +137,10 @@ func (b *Builder) Build(ctx context.Context) (*BuilderSchema, error) {
 			Date:        time.Now().UTC().Unix(),
 		},
 		Params: Parameters{
-			From:  b.From,
-			To:    b.To,
-			Tasks: b.Tasks,
+			From:          b.From,
+			To:            b.To,
+			Tasks:         b.Tasks,
+			AddressFilter: b.AddressFilter,
 		},
 		CAR: out.Bytes(),
 		Exp: BuilderExpected{

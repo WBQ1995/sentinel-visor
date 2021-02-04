@@ -47,9 +47,10 @@ type Metadata struct {
 }
 
 type Parameters struct {
-	From  int64    `json:"from"`
-	To    int64    `json:"to"`
-	Tasks []string `json:"tasks"`
+	From          int64    `json:"from"`
+	To            int64    `json:"to"`
+	Tasks         []string `json:"tasks"`
+	AddressFilter string   `json:"address-filter"`
 }
 
 type BuilderExpected struct {
